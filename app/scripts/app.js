@@ -8,7 +8,7 @@
         'ui.router', // Routing
         'oc.lazyLoad',
         'ui.bootstrap', // Bootstrap
-        'ngIdle'
-
+        'ngIdle',
+        'countrySelect'
     ]);
 })();

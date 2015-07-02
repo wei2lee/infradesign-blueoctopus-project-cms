@@ -116,6 +116,7 @@ function dropZone() {
             maxThumbnailFilesize: 5,
             dictDefaultMessage: '',
             init: function () {
+                if (scope.files === undefined) scope.files = [];
                 scope.files.push({
                     file: 'added'
                 });

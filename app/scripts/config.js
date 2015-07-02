@@ -36,7 +36,7 @@ function config($stateProvider, $urlRouterProvider) {
             url: "/team-list",
             templateUrl: "views/team-list.html",
             data: {
-                pageTitle: 'Project Management - List'
+                pageTitle: 'Team Management - List'
             },
             resolve: {
                 loadPlugin: function ($ocLazyLoad) {
@@ -59,18 +59,30 @@ function config($stateProvider, $urlRouterProvider) {
         })
         .state('index.team-create', {
             url: "/team-create",
-            templateUrl: "views/team-create.html",
+            templateUrl: "views/team-create-edit.html",
             data: {
                 pageTitle: 'Team Management - Create'
-            },
-            resolve: {
-                loadPlugin: function ($ocLazyLoad) {
-                    return $ocLazyLoad.load([
-                        {
-                            files: ['css/plugins/dropzone/basic.css', 'css/plugins/dropzone/dropzone.css', 'js/plugins/dropzone/dropzone.js']
-                        }
-                    ]);
-                }
+            }
+        })
+        .state('index.team-edit', {
+            url: "/team-edit",
+            templateUrl: "views/team-create-edit.html",
+            data: {
+                pageTitle: 'Team Management - Edit'
+            }
+        })
+        .state('index.user-create', {
+            url: "/user-create",
+            templateUrl: "views/user-create-edit.html",
+            data: {
+                pageTitle: 'Team Management - Create Team Member'
+            }
+        })
+        .state('index.user-edit', {
+            url: "/user-edit",
+            templateUrl: "views/user-create-edit.html",
+            data: {
+                pageTitle: 'Team Management - Edit Team Member'
             }
         })
         .state('index.role-list', {
@@ -100,25 +112,23 @@ function config($stateProvider, $urlRouterProvider) {
         })
         .state('index.role-create', {
             url: "/role-create",
-            templateUrl: "views/role-create.html",
+            templateUrl: "views/role-create-edit.html",
             data: {
                 pageTitle: 'Role Management - Create'
-            },
-            resolve: {
-                loadPlugin: function ($ocLazyLoad) {
-                    return $ocLazyLoad.load([
-                        {
-                            files: ['css/plugins/dropzone/basic.css', 'css/plugins/dropzone/dropzone.css', 'js/plugins/dropzone/dropzone.js']
-                        }
-                    ]);
-                }
+            }
+        })
+        .state('index.role-edit', {
+            url: "/role-edit",
+            templateUrl: "views/role-create-edit.html",
+            data: {
+                pageTitle: 'Role Management - Edit'
             }
         })
         .state('index.project-list', {
             url: "/project-list",
             templateUrl: "views/project-list.html",
             data: {
-                pageTitle: 'Team Management - List'
+                pageTitle: 'Project Management - List'
             },
             resolve: {
                 loadPlugin: function ($ocLazyLoad) {
@@ -141,9 +151,25 @@ function config($stateProvider, $urlRouterProvider) {
         })
         .state('index.project-create', {
             url: "/project-create",
-            templateUrl: "views/project-create.html",
+            templateUrl: "views/project-create-edit.html",
             data: {
                 pageTitle: 'Project Management - Create'
+            },
+            resolve: {
+                loadPlugin: function ($ocLazyLoad) {
+                    return $ocLazyLoad.load([
+                        {
+                            files: ['css/plugins/dropzone/basic.css', 'css/plugins/dropzone/dropzone.css', 'js/plugins/dropzone/dropzone.js']
+                        }
+                    ]);
+                }
+            }
+        })
+        .state('index.project-edit', {
+            url: "/project-edit",
+            templateUrl: "views/project-create-edit.html",
+            data: {
+                pageTitle: 'Project Management - Edit'
             },
             resolve: {
                 loadPlugin: function ($ocLazyLoad) {

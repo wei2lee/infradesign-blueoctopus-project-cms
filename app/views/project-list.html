@@ -1,5 +1,5 @@
 <!-- Wrapper-->
-<div id="wrapper wrapper-content animated fadeInRight" ng-controller="ProjectListCtrl as projectListCtrl">
+<div id="wrapper wrapper-content animated fadeInRight" ng-controller="ProjectListCtrl as controller">
 
 
     <!-- Main view  -->
@@ -30,7 +30,7 @@
                         </div>
                     </div>
                     <div class="ibox-content">
-                        <table datatable="ng" class="table table-striped table-bordered table-hover dataTables-example" dt-options="projectListCtrl.dtOptions" dt-column-defs="projectListCtrl.dtColumnDefs">
+                        <table datatable="ng" class="table table-striped table-bordered table-hover dataTables-example" dt-options="controller.dtOptions" dt-column-defs="controller.dtColumnDefs">
                             <thead>
                                 <tr>
 
@@ -43,7 +43,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr ng-repeat="project in projectListCtrl.projects">
+                                <tr ng-repeat="project in controller.projects">
 
                                     <td>{{ project.get('title') || '' }}</td>
                                     <td>{{ project.get('images') || '' }}</td>
@@ -51,7 +51,7 @@
                                     <td>{{ project.get('description') || '' }}</td>
                                     <td>{{ project.get('forVIP') || '' }}</td>
 
-                                    <td><span class='btn btn-primary btn-xs'>Edit</span>&nbsp;<span class='btn btn-danger btn-xs'>Delete</span>
+                                    <td><span class='btn btn-primary btn-xs' ng-click='controller.edit(project)'>Edit</span>&nbsp;<span class='btn btn-danger btn-xs' ng-click='controller.delete(project)'>Delete</span>
                                     </td>
 
                                 </tr>
