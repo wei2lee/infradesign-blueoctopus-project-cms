@@ -35,7 +35,7 @@
                                 <tr>
 
                                     <th>Title</th>
-                                    <th>Images</th>
+                                    <!--                                    <th>Images</th>-->
                                     <th>Features</th>
                                     <th>Description</th>
                                     <th>ForVIP</th>
@@ -45,13 +45,13 @@
                             <tbody>
                                 <tr ng-repeat="project in controller.projects">
 
-                                    <td>{{ project.get('title') || '' }}</td>
-                                    <td>{{ project.get('images') || '' }}</td>
-                                    <td>{{ project.get('features') || '' }}</td>
-                                    <td>{{ project.get('description') || '' }}</td>
-                                    <td>{{ project.get('forVIP') || '' }}</td>
+                                    <td>{{ project.title || '' }}</td>
+                                    <!--                                    <td>{{ project.images || '' }}</td>-->
+                                    <td>{{ project.featuresString || '' }}</td>
+                                    <td>{{ project.description || '' }}</td>
+                                    <td>{{ project.forVIP || '' }}</td>
 
-                                    <td><span class='btn btn-primary btn-xs' ng-click='controller.edit(project)'>Edit</span>&nbsp;<span class='btn btn-danger btn-xs' ng-click='controller.delete(project)'>Delete</span>
+                                    <td class='column-action'><span class='btn btn-primary btn-xs' ng-click='controller.edit(project)'>Edit</span>&nbsp;<span class='btn btn-danger btn-xs' ng-click='controller.delete(project)'>Delete</span>
                                     </td>
 
                                 </tr>

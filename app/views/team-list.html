@@ -22,7 +22,7 @@
     <div class="wrapper wrapper-content animated fadeInRight">
         <div class="row">
             <div class="col-lg-12">
-                <div class="col-lg-12" ng-show="controller.alert != null">
+                <div class="col-lg-12 animated fadeInLeft" ng-show="controller.alert != null">
                     <alert type="{{controller.alert.type}}" close="controller.alert=null">
                         <strong>{{controller.alert.title}}</strong> {{controller.alert.message}}
                     </alert>
@@ -51,7 +51,7 @@
                                     <td>{{ team.defaultCountry || '' }}</td>
                                     <td>{{ team.createdBy || '' }}</td>
                                     <td>{{ team.memberFullnames || '' }}</td>
-                                    <td><span class='btn btn-primary btn-xs' ng-click='controller.edit(team)'>Edit</span>&nbsp;<span class='btn btn-danger btn-xs' ng-click='controller.delete(team)'>Delete</span>
+                                    <td class='column-action'><span class='btn btn-primary btn-xs' ng-click='controller.edit(team)'>Edit</span>&nbsp;<span class='btn btn-danger btn-xs' ng-click='controller.delete(team)'>Delete</span>
                                     </td>
                                 </tr>
                             </tbody>

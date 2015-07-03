@@ -4181,6 +4181,12 @@ body.modal-open {
 }
 .loginscreen.middle-box {
   width: 300px;
+  margin-top: 20px;
+}
+@media screen and (min-width: 768px) {
+  .loginscreen.middle-box {
+    margin-top: 180px;
+  }
 }
 .loginColumns {
   max-width: 800px;
@@ -4796,7 +4802,7 @@ dd.project-people {
 .clients-list table tr td {
   height: 46px;
   vertical-align: middle;
-  border: none ;
+  border: none;
 }
 .client-link {
   font-weight: 600;
@@ -7507,4 +7513,15 @@ div.dropdown.profile-element .img-circle {
 .dropzone {
   min-height: 0px;
   height: 160px;
+}
+table td.column-action .btn {
+  margin-bottom: 0px;
+}
+table > thead > tr > th,
+.table > tbody > tr > th,
+.table > tfoot > tr > th,
+.table > thead > tr > td,
+.table > tbody > tr > td,
+.table > tfoot > tr > td {
+  vertical-align: middle;
 }

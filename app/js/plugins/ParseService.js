@@ -1,8 +1,17 @@
 angular.module('ParseServices', [])
 
-.factory('ParseSDK', function () {
+.service('ParseSDK', function () {
     //initialize parse
+    Parse.initialize("NyrUCp8l7LezGnpE7YSUN26quUylPmjJpxA0n1cm", "NPBTNCS2bwrzQqxCfVZ2eYfPjuwYPUwSbnWlZCVQ");
 
+    this.TeamClassName = "Team";
+    this.TeamProperties = ['name', 'defaultCountry', 'createdBy'];
+    this.ProjectClassName = "Project";
+    this.ProjectProperties = ['title', 'images', 'features', 'description', 'forVIP'];
+    this.UserRoleClassName = "UserRole";
+    this.UserRoleProperties = ['name', 'remarks'];
+    this.MemberClassName = "Member";
+    this.MemberProperties = ['username', 'team', 'fullName', 'country', 'createdBy', 'userRole', 'password', 'lastAccess'];
 })
 
 .factory('ParseQuery', ['$q', '$rootScope', function ($q, $rootScope) {
@@ -103,6 +112,49 @@ angular.module('ParseServices', [])
         }
     };
 
+}])
+
+.factory('ParseProject', ['ParseObject', 'ParseSDK', function (ParseObject, ParseSDK) {
+        return function (parseData) {
+            var o = new ParseObject(parseData || ParseSDK.ProjectClassName, ParseSDK.ProjectProperties);
+            (function () {
+                Object.defineProperty(o, 'featuresString', {
+                    get: function () {
+                        if (!this.features) return '';
+                        else return this.features.join(', ');
+                    }
+                });
+            })();
+            return o;
+        };
+}])
+    .factory('ParseMember', ['ParseObject', 'ParseSDK', function (ParseObject, ParseSDK) {
+        return function (parseData) {
+            var o = new ParseObject(parseData || ParseSDK.MemberClassName, ParseSDK.MemberProperties);
+            return o;
+        };
+}])
+    .factory('ParseUserRole', ['ParseObject', 'ParseSDK', function (ParseObject, ParseSDK) {
+        return function (parseData) {
+            var o = new ParseObject(parseData || ParseSDK.UserRoleClassName, ParseSDK.UserRoleProperties);
+            return o;
+        };
+}])
+    .factory('ParseTeam', ['ParseObject', 'ParseSDK', function (ParseObject, ParseSDK) {
+        return function (parseData) {
+            var o = new ParseObject(parseData || ParseSDK.TeamClassName, ParseSDK.TeamProperties);
+            (function () {
+                Object.defineProperty(o, 'memberFullnames', {
+                    get: function () {
+                        if (!this.members) return '';
+                        else return _.map(this.members, function (member) {
+                            return member.fullName
+                        }).join(', ');
+                    }
+                });
+            })();
+            return o;
+        };
 }])
 
 

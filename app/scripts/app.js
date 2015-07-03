@@ -9,6 +9,7 @@
         'oc.lazyLoad',
         'ui.bootstrap', // Bootstrap
         'ngIdle',
-        'countrySelect'
+        'countrySelect',
+        'ngCookies'
     ]);
 })();

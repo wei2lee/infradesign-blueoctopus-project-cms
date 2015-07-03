@@ -45,7 +45,9 @@
 <!-- ControllerAs syntax -->
 <!-- Main controller with serveral data used in Inspinia theme on diferent view -->
 
-<body ng-controller="MainCtrl as main" class="">
+<!--<body ng-controller="MainCtrl as main" class="">-->
+
+<body ng-controller="MainCtrl as main" class="{{main.$state.current.data.specialClass}}" landing-scrollspy id="page-top">
     <!-- Main view  -->
     <div ui-view></div>
 
@@ -59,7 +61,7 @@
     <script src="bower_components/jquery/dist/jquery.min.js"></script>
     <script src="bower_components/jquery-ui/jquery-ui.min.js"></script>
     <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
-    <script src="bower_components/bootbox/bootbox.js"></script>
+    <!--    <script src="bower_components/bootbox/bootbox.js"></script>-->
 
 
 
@@ -78,7 +80,8 @@
     <script src="bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
     <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
     <script src="js/plugins/angular-idle/angular-idle.js"></script>
-    <script src="bower_components/parse-angular-patch/dist/parse-angular.js"></script>
+    <script src="bower_components/angular-cookies/angular-cookies.min.js"></script>
+    <!--    <script src="bower_components/parse-angular-patch/dist/parse-angular.js"></script>-->
     <!-- Angular Dependiences -->
     <!--                      -->
     <!--                      -->
