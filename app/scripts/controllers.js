@@ -59,7 +59,7 @@ function ProjectListCtrl($scope, DTOptionsBuilder, DTColumnDefBuilder, ParseProj
         var indexOf = _this.projects.indexOf(project);
         _this.projects.splice(indexOf, 1);
 
-        project.data.destroy().fail(function () {
+        project.data.destroy().fail(function (error) {
             _this.alert = {
                 title: 'Fail',
                 message: error.message,
@@ -111,11 +111,45 @@ function ProjectCreateEditCtrl($scope, ParseProject, $modal, $rootScope, $state,
             }).always(function () {
                 $scope.$apply();
             });
+        } else {
+
         }
+
     } else {
         this.project = new ParseProject();
     }
+    this.delete = function () {
+        $scope.loading = {
+            message: "Deleting..."
+        }
+        $loading = $modal.open({
+            templateUrl: 'views/modal-loading.html',
+            backdrop: 'static',
+            scope: $scope
+        });
+        _this.alert = null;
+        this.project.data.destroy().done(function (result) {
+            $state.go('index.project-list');
+        }).fail(function (error) {
+            _this.alert = {
+                title: 'Fail',
+                message: error.message,
+                type: 'danger'
+            };
+        }).always(function () {
+            $loading.dismiss('cancel');
+            $scope.$apply();
+        });
+    }
     this.save = function () {
+        console.log($scope.mainPhotos);
+        console.log($scope.photos);
+
+        _this.project.mainPhoto = $scope.mainPhotos.length ? $scope.mainPhotos[0].url() : null;
+        _this.project.photos = _.map($scope.photos, function (photo) {
+            console.log(photo);
+            return photo.url() || null;
+        });
         $loading = $modal.open({
             templateUrl: 'views/modal-loading.html',
             backdrop: 'static'
@@ -128,6 +162,10 @@ function ProjectCreateEditCtrl($scope, ParseProject, $modal, $rootScope, $state,
                 message: _this.isEdit ? 'Record ' + project.title + ' is saved to the system.' : 'New record ' + project.title + ' is added to the system.',
                 type: 'success'
             };
+            if (!_this.isEdit) {
+                _this.project = new ParseProject();
+                $scope.$apply();
+            }
         }).fail(function (error) {
             _this.alert = {
                 title: 'Fail',
@@ -149,7 +187,7 @@ function TeamListCtrl($scope, DTOptionsBuilder, DTColumnDefBuilder, ParseTeam, P
         var indexOf = _this.teams.indexOf(team);
         _this.teams.splice(indexOf, 1);
 
-        team.data.destroy().fail(function () {
+        team.data.destroy().fail(function (error) {
             _this.alert = {
                 title: 'Fail',
                 message: error.message,
@@ -167,34 +205,24 @@ function TeamListCtrl($scope, DTOptionsBuilder, DTColumnDefBuilder, ParseTeam, P
         });
     };
 
-    var teamQuery = new Parse.Query("Team");
+    var teamQuery = new Parse.Query(new ParseTeam().className);
     teamQuery.find().done(function (result) {
         _this.teams = _.map(result, function (o) {
             o = new ParseTeam(o);
-            o.memberFullnames = '';
             return o;
         });
-
-        console.log(_this.teams.length);
-
         var userQuery = new Parse.Query("Member");
         userQuery.include('userRole');
         return userQuery.find();
     }).done(function (result) {
         _this.users = _.map(result, function (o) {
-            var ret = new ParseMember(o);
-            ret.userRole = ret.data.get('userRole') ? new ParseUserRole(ret.data.get('userRole')) : null;
-            return ret;
+            return new ParseMember(o);
         });
         _.each(_this.teams, function (team) {
             team.members = _.filter(_this.users, function (user) {
-                return user.team && user.team.id == team.data.id;
+                return user.team && user.team.data.id == team.data.id;
             });
-            team.memberFullnames = _.map(team.members, function (member) {
-                return member.fullName || '(Empty)';
-            }).join(', ');
         });
-        $scope.$apply();
     }).fail(function (error) {
         _this.alert = {
             title: 'Fail',
@@ -233,8 +261,29 @@ function TeamCreateEditCtrl($scope, ParseTeam, $modal, $rootScope, $state, $stat
         this.team = new ParseTeam();
         if (!this.team.defaultCountry) this.team.defaultCountry = 'MY';
     }
-
-
+    this.delete = function () {
+        $scope.loading = {
+            message: "Deleting..."
+        }
+        $loading = $modal.open({
+            templateUrl: 'views/modal-loading.html',
+            backdrop: 'static',
+            scope: $scope
+        });
+        _this.alert = null;
+        this.team.data.destroy().done(function (result) {
+            $state.go('index.project-list');
+        }).fail(function (error) {
+            _this.alert = {
+                title: 'Fail',
+                message: error.message,
+                type: 'danger'
+            };
+        }).always(function () {
+            $loading.dismiss('cancel');
+            $scope.$apply();
+        });
+    }
     this.save = function () {
         $loading = $modal.open({
             templateUrl: 'views/modal-loading.html',
@@ -270,59 +319,61 @@ function MemberListCtrl($scope, DTOptionsBuilder, DTColumnDefBuilder, ParseMembe
     var _this = this;
     this.alert = null;
     this.users = [];
-
     this.team = $rootScope.editTeam;
-    if (!this.team) {
-        this.team = new ParseTeam();
-        this.team.data.id = $stateParams.objectId;
-        this.team.data.fetch().done(function () {
-            if (!_this.team.defaultCountry) _this.team.defaultCountry = 'MY';
-        }).fail(function (error) {
-            _this.alert = {
-                title: 'Fail',
-                message: error.message,
-                type: 'danger'
-            };
-        }).always(function () {
-            $scope.$apply();
-        });
-    }
-
-
     this.delete = function (user) {
-        var indexOf = _this.teams.indexOf(team);
-        _this.users.splice(indexOf, 1);
-
-        user.data.destroy().fail(function () {
+        var indexOf = _this.team.members.indexOf(user);
+        _this.team.members.splice(indexOf, 1);
+        user.data.destroy().fail(function (error) {
             _this.alert = {
                 title: 'Fail',
                 message: error.message,
                 type: 'danger'
             };
+            console.log(error.message);
         }).always(function () {
             $scope.$apply();
         });
     };
 
-    this.edit = function (user) {
-        $rootScope.editUser = user
+    this.edit = function (team, user) {
+        $rootScope.editTeam = team;
+        $rootScope.editUser = user;
         $state.go('index.user-edit', {
+            teamId: team.data.id,
             objectId: user.data.id
         });
     };
 
-    if (this.team) {
-        this.team.members = [];
-        var userQuery = new Parse.Query("Member");
-        userQuery.include('userRole');
-        userQuery.find().done(function (result) {
+
+    var fetchTeam = null;
+    if (!this.team) {
+        this.team = new ParseTeam();
+        this.team.data.id = $stateParams.objectId;
+        fetchTeam = this.team.data.fetch().done(function () {
+            if (!_this.team.defaultCountry) _this.team.defaultCountry = 'MY';
+            _this.team.members = [];
+        }).fail(function (error) {
+            _this.alert = {
+                title: 'Fail',
+                message: error.message,
+                type: 'danger'
+            };
+        }).always(function () {
+            $scope.$apply();
+        });
+    } else {
+        fetchTeam = $.Deferred().resolve();
+    }
+
+    var userQuery = new Parse.Query("Member");
+    userQuery.include('userRole');
+    fetchTeam.then(function () {
+        return userQuery.find().done(function (result) {
             _this.users = _.map(result, function (o) {
-                var ret = new ParseMember(o);
-                ret.userRole = ret.data.get('userRole') ? new ParseUserRole(ret.data.get('userRole')) : null;
-                return ret;
+                return new ParseMember(o);
             });
             _this.team.members = _.filter(_this.users, function (user) {
-                return user.team && user.team.id == _this.team.data.id;
+                return user.team && user.team.data.id == _this.team.data.id;
             });
         }).fail(function (error) {
             _this.alert = {
@@ -333,54 +384,50 @@ function MemberListCtrl($scope, DTOptionsBuilder, DTColumnDefBuilder, ParseMembe
         }).always(function () {
             $scope.$apply();
         });
-    }
+    });
 }
 
 
-function UserCreateEditCtrl($scope, ParseMember, ParseUserRole, $modal, $rootScope, $state, $stateParams) {
+function UserCreateEditCtrl($scope, ParseMember, ParseUserRole, ParseTeam, $modal, $rootScope, $state, $stateParams) {
     var _this = this;
     this.alert = null;
     this.isEdit = $state.current.name.indexOf("user-edit") >= 0;
     this.roles = [];
+    this.userRole = null;
     this.team = $rootScope.editTeam;
-    if (this.isEdit) {
-        this.user = $rootScope.editUser;
-        if (!this.user) {
-            this.user = new ParseMember();
-            this.user.data.id = $stateParams.objectId;
-            this.user.data.fetch().done(function () {
-                if (!_this.user.country) _this.user.country = _this.team.defaultCountry;
-            }).fail(function (error) {
-                _this.alert = {
-                    title: 'Fail',
-                    message: error.message,
-                    type: 'danger'
-                };
-            }).always(function () {
-                $scope.$apply();
-            });
+
+    this.delete = function () {
+        $scope.loading = {
+            message: "Deleting..."
         }
-    } else {
-        this.user = new ParseMember();
-        if (!_this.user.country) _this.user.country = _this.team.defaultCountry;
+        $loading = $modal.open({
+            templateUrl: 'views/modal-loading.html',
+            backdrop: 'static',
+            scope: $scope
+        });
+        _this.alert = null;
+        this.user.data.destroy().done(function (result) {
+            $state.go('index.team-edit', {
+                objectId: _this.team.data.id
+            });
+        }).fail(function (error) {
+            _this.alert = {
+                title: 'Fail',
+                message: error.message,
+                type: 'danger'
+            };
+
+            console.log(error.message);
+        }).always(function () {
+            $loading.dismiss('cancel');
+            $scope.$apply();
+        });
     }
 
-    var roleQuery = new Parse.Query("UserRole");
-    roleQuery.find().done(function (result) {
-        _this.roles = _.map(result, function (o) {
-            return new ParseUserRole(o);
-        });
-    }).fail(function (error) {
-        _this.alert = {
-            title: 'Fail',
-            message: error.message,
-            type: 'danger'
-        };
-    }).always(function () {
-        $scope.$apply();
-    });
 
     this.save = function () {
+        _this.user.userRole = _this.userRole;
+        console.log(_this.user.userRole);
         $loading = $modal.open({
             templateUrl: 'views/modal-loading.html',
             backdrop: 'static'
@@ -388,12 +435,17 @@ function UserCreateEditCtrl($scope, ParseMember, ParseUserRole, $modal, $rootSco
         _this.alert = null;
         this.user.data.save().done(function (result) {
             var user = new ParseMember(result);
-            if (!this.isEdit) _this.user.country = _this.team.defaultCountry;
             _this.alert = {
                 title: 'Success',
-                message: _this.isEdit ? 'Record ' + user.fullName + ' is saved to the system.' : 'New record ' + user.fullName + ' is added to the system.',
+                message: _this.isEdit ? 'Record ' + user.username + ' is saved to the system.' : 'New record ' + user.username + ' is added to the system.',
                 type: 'success'
             };
+            if (!_this.isEdit) {
+                _this.user = new ParseMember();
+                _this.userRole = _this.user.userRole;
+                _this.user.country = _this.team.defaultCountry;
+                $scope.$apply();
+            }
         }).fail(function (error) {
             _this.alert = {
                 title: 'Fail',
@@ -402,6 +454,53 @@ function UserCreateEditCtrl($scope, ParseMember, ParseUserRole, $modal, $rootSco
             };
         }).always(function () {
             $loading.dismiss('cancel');
+            $scope.$apply();
+        });
+    }
+    if (this.isEdit) {
+        var fetchUser = new Parse.Query("Member");
+        fetchUser.include("team");
+        fetchUser.include("userRole");
+        fetchUser.equalTo("objectId", $stateParams.objectId);
+        fetchUser.find().done(function (results) {
+            _this.user = new ParseMember(results[0]);
+            _this.team = _this.user.team;
+            _this.userRole = _this.user.userRole;
+            if (!_this.user.country) _this.user.country = _this.team.defaultCountry || 'MY';
+            return new Parse.Query("UserRole").find();
+        }).then(function (result) {
+            _this.roles = _.map(result, function (o) {
+                return new ParseUserRole(o);
+            });
+        }).fail(function (error) {
+            _this.alert = {
+                title: 'Fail',
+                message: error.message,
+                type: 'danger'
+            };
+        }).always(function () {
+            $scope.$apply();
+        });
+    } else {
+        this.user = new ParseMember();
+        this.userRole = this.user.userRole;
+        this.team = new ParseTeam();
+        this.team.data.id = $stateParams.teamId;
+        fetchTeam = this.team.data.fetch().done(function (result) {
+            if (!_this.team.defaultCountry) _this.team.defaultCountry = 'MY';
+            _this.user.team = new ParseTeam(result);
+            return new Parse.Query("UserRole").find();
+        }).then(function (result) {
+            _this.roles = _.map(result, function (o) {
+                return new ParseUserRole(o);
+            });
+        }).fail(function (error) {
+            _this.alert = {
+                title: 'Fail',
+                message: error.message,
+                type: 'danger'
+            };
+        }).always(function () {
             $scope.$apply();
         });
     }
@@ -418,7 +517,7 @@ function RoleListCtrl($scope, DTOptionsBuilder, DTColumnDefBuilder, ParseUserRol
         var indexOf = _this.roles.indexOf(role);
         _this.roles.splice(indexOf, 1);
 
-        role.data.destroy().fail(function () {
+        role.data.destroy().fail(function (error) {
             _this.alert = {
                 title: 'Fail',
                 message: error.message,
@@ -477,19 +576,47 @@ function RoleCreateEditCtrl($scope, ParseUserRole, $modal, $rootScope, $state, $
         this.role = new ParseUserRole();
     }
 
+    this.delete = function () {
+        $scope.loading = {
+            message: "Deleting..."
+        }
+        $loading = $modal.open({
+            templateUrl: 'views/modal-loading.html',
+            backdrop: 'static',
+            scope: $scope
+        });
+        _this.alert = null;
+        this.role.data.destroy().done(function (result) {
+            $state.go('index.role-list');
+        }).fail(function (error) {
+            _this.alert = {
+                title: 'Fail',
+                message: error.message,
+                type: 'danger'
+            };
+        }).always(function () {
+            $loading.dismiss('cancel');
+            $scope.$apply();
+        });
+    }
+
     this.save = function () {
         $loading = $modal.open({
             templateUrl: 'views/modal-loading.html',
             backdrop: 'static'
         });
         _this.alert = null;
-        this.role.data.save().done(function (result) {
+        _this.role.data.save().done(function (result) {
             var role = new ParseUserRole(result);
             _this.alert = {
                 title: 'Success',
                 message: _this.isEdit ? 'Record ' + role.name + ' is saved to the system.' : 'New record ' + role.name + ' is added to the system.',
                 type: 'success'
             };
+            if (!_this.isEdit) {
+                _this.role = new ParseUserRole();
+                $scope.$apply();
+            }
         }).fail(function (error) {
             _this.alert = {
                 title: 'Fail',

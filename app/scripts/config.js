@@ -14,16 +14,17 @@ var resolvePluginDataTable = {
             {
                 serie: true,
                 files: ['js/plugins/dataTables/jquery.dataTables.js', 'css/plugins/dataTables/dataTables.bootstrap.css']
-                        },
+            },
             {
                 serie: true,
                 files: ['js/plugins/dataTables/dataTables.bootstrap.js']
-                        },
+            },
             {
                 name: 'datatables',
-                files: ['js/plugins/dataTables/angular-datatables.min.js']
-                        }
-                    ]);
+                //files: ['js/plugins/dataTables/angular-datatables.min.js']
+                files: ['bower_components/angular-datatables/dist/angular-datatables.js']
+            }
+        ]);
     }
 };
 
@@ -78,14 +79,14 @@ function config($stateProvider, $urlRouterProvider) {
             resolve: resolvePluginDataTable
         })
         .state('index.user-create', {
-            url: "user/create",
+            url: "team/{teamId}/user/create",
             templateUrl: "views/user-create-edit.html",
             data: {
                 pageTitle: 'Team Management - Create Team Member'
             }
         })
         .state('index.user-edit', {
-            url: "user/edit/{objectId}",
+            url: "team/{teamId}/user/edit/{objectId}",
             templateUrl: "views/user-create-edit.html",
             data: {
                 pageTitle: 'Team Management - Edit Team Member'

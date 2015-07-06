@@ -111,26 +111,60 @@ function dropZone() {
     return function (scope, element, attrs) {
         element.dropzone({
             url: "/upload",
+            addRemoveLinks: true,
+            autoProcessQueue: false,
+            maxFiles: attrs.maxfiles,
             maxFilesize: 100,
             paramName: "uploadfile",
-            maxThumbnailFilesize: 5,
+            maxThumbnailFilesize: attrs.maxfiles,
             dictDefaultMessage: '',
             init: function () {
-                if (scope.files === undefined) scope.files = [];
-                scope.files.push({
-                    file: 'added'
+                this.idid = '123';
+
+
+                var _this = this;
+                var filesPropertyName = attrs.filespropertyname || 'files';
+
+                console.log('dropZone.init');
+                if (scope[filesPropertyName] === undefined) scope[filesPropertyName] = [];
+                this.on('success', function (file, json) {
+                    console.log('dropZone.success');
                 });
-                this.on('success', function (file, json) {});
+
+
+                this.on('maxfilesexceeded', function (file) {
+                    console.log('dropZone.maxfilesexceeded');
+                    _this.removeFile(file);
+                });
+
+                this.on('sending', function (file, xhr, formData) {
+                    console.log('dropZone.sending');
+                });
+
                 this.on('addedfile', function (file) {
+                    console.log('dropZone.addedfile');
+                    if (scope[filesPropertyName].length + 1 > attrs.maxfiles) {
+                        return;
+                    }
+                    var parseFile = new Parse.File(file.name, file);
+                    var savePromise = parseFile.save();
+                    parseFile.savePromise = savePromise;
+                    parseFile.file = file;
+                    savePromise.done(function (result) {
+                        console.log(result);
+                        parseFile.saveDone = true;
+                    }).fail(function (error) {
+                        console.log(error);
+                        parseFile.saveError = error;
+                    });
                     scope.$apply(function () {
-                        alert(file);
-                        scope.files.push({
-                            file: 'added'
-                        });
+                        scope[filesPropertyName].push(parseFile);
                     });
                 });
                 this.on('drop', function (file) {
-                    alert('file');
+                    //                    alert('file');
+                    console.log('dropZone.drop');
+
                 });
             }
         });

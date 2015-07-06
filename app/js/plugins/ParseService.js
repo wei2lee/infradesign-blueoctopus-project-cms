@@ -7,11 +7,11 @@ angular.module('ParseServices', [])
     this.TeamClassName = "Team";
     this.TeamProperties = ['name', 'defaultCountry', 'createdBy'];
     this.ProjectClassName = "Project";
-    this.ProjectProperties = ['title', 'images', 'features', 'description', 'forVIP'];
+    this.ProjectProperties = ['title', 'photos', 'mainPhoto', 'coordinate', 'features', 'description', 'forVIP', 'latitude', 'longitude'];
     this.UserRoleClassName = "UserRole";
     this.UserRoleProperties = ['name', 'remarks'];
     this.MemberClassName = "Member";
-    this.MemberProperties = ['username', 'team', 'fullName', 'country', 'createdBy', 'userRole', 'password', 'lastAccess'];
+    this.MemberProperties = ['username', 'fullName', 'country', 'createdBy', 'password', 'lastAccess'];
 })
 
 .factory('ParseQuery', ['$q', '$rootScope', function ($q, $rootScope) {
@@ -117,6 +117,10 @@ angular.module('ParseServices', [])
 .factory('ParseProject', ['ParseObject', 'ParseSDK', function (ParseObject, ParseSDK) {
         return function (parseData) {
             var o = new ParseObject(parseData || ParseSDK.ProjectClassName, ParseSDK.ProjectProperties);
+            o.className = ParseSDK.ProjectClassName;
+            if (!o.data.get('features')) {
+                o.data.set('features', []);
+            }
             (function () {
                 Object.defineProperty(o, 'featuresString', {
                     get: function () {
@@ -128,21 +132,48 @@ angular.module('ParseServices', [])
             return o;
         };
 }])
-    .factory('ParseMember', ['ParseObject', 'ParseSDK', function (ParseObject, ParseSDK) {
-        return function (parseData) {
-            var o = new ParseObject(parseData || ParseSDK.MemberClassName, ParseSDK.MemberProperties);
-            return o;
-        };
-}])
     .factory('ParseUserRole', ['ParseObject', 'ParseSDK', function (ParseObject, ParseSDK) {
         return function (parseData) {
             var o = new ParseObject(parseData || ParseSDK.UserRoleClassName, ParseSDK.UserRoleProperties);
+            o.className = ParseSDK.UserRoleClassName;
+            return o;
+        };
+}])
+    .factory('ParseMember', ['ParseObject', 'ParseUserRole', 'ParseSDK', function (ParseObject, ParseUserRole, ParseSDK) {
+        return function (parseData) {
+            var o = new ParseObject(parseData || ParseSDK.MemberClassName, ParseSDK.MemberProperties);
+            o.className = ParseSDK.MemberClassName;
+            (function () {
+                Object.defineProperty(o, 'userRole', {
+                    get: function () {
+                        if (!this.data.get('userRole')) return undefined;
+                        else return new ParseUserRole(this.data.get('userRole'));
+                    },
+                    set: function (value) {
+                        if (!value) this.data.set('userRole', undefined);
+                        else this.data.set('userRole', value.data);
+                    }
+                });
+            })();
+            (function () {
+                Object.defineProperty(o, 'team', {
+                    get: function () {
+                        if (!this.data.get('team')) return undefined;
+                        else return new ParseUserRole(this.data.get('team'));
+                    },
+                    set: function (value) {
+                        if (!value) this.data.set('team', undefined);
+                        else this.data.set('team', value.data);
+                    }
+                });
+            })();
             return o;
         };
 }])
     .factory('ParseTeam', ['ParseObject', 'ParseSDK', function (ParseObject, ParseSDK) {
         return function (parseData) {
             var o = new ParseObject(parseData || ParseSDK.TeamClassName, ParseSDK.TeamProperties);
+            o.className = ParseSDK.TeamClassName;
             (function () {
                 Object.defineProperty(o, 'memberFullnames', {
                     get: function () {

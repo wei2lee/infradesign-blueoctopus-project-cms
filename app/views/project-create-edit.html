@@ -20,11 +20,21 @@
     </div>
     <div class="wrapper wrapper-content animated fadeInRight">
         <div class="row">
+            <div class="col-lg-12 animated fadeInLeft" ng-show="controller.alert != null">
+                <alert type="{{controller.alert.type}}" close="controller.alert=null">
+                    <strong>{{controller.alert.title}}</strong> {{controller.alert.message}}
+                </alert>
+            </div>
             <div class="col-lg-12">
                 <div class="ibox float-e-margins">
                     <div class="ibox-title">
                         <h5>{{controller.isEdit ? "Edit" : "Create"}} 
-                    </h5>
+                        </h5>
+
+
+                        <div ng-if="controller.isEdit" class="ibox-tools">
+                            <a ng-click="controller.delete()" class="btn btn-danger btn-xs">Delete</a>
+                        </div>
                     </div>
                     <div class="ibox-content">
                         <form method="get" class="form-horizontal">
@@ -45,24 +55,52 @@
                             </div>
                             <div class="hr-line-dashed"></div>
                             <div class="form-group">
-                                <label class="col-sm-2 control-label">Features</label>
-                                <div class="col-sm-10 m-b" ng-repeat="feature in controller.project.features">
-                                    <div class="input-group">
-                                        <input type="text" class="form-control">
-                                        <span class="input-group-btn"> 
-                                        <button type="button" class="btn btn-danger"><i class='fa fa-trash'></i></button> 
-                                        </span>
-                                    </div>
-                                </div>
+                                <label class="col-sm-2 control-label">Latitude</label>
+
                                 <div class="col-sm-10">
-                                    <button class="btn btn-primary" type="button" ng-click="controller.project.features.push('')">Add Feature</button>
+                                    <input type="text" class="form-control" ng-model='controller.project.latitude'>
                                 </div>
                             </div>
                             <div class="hr-line-dashed"></div>
                             <div class="form-group">
-                                <label class="col-sm-2 control-label">Images</label>
+                                <label class="col-sm-2 control-label">Longitude</label>
+
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" ng-model='controller.project.longitude'>
+                                </div>
+                            </div>
+                            <div class="hr-line-dashed"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Features</label>
+
+                                <div class="col-sm-10 m-b" ng-class="{'col-sm-offset-2':$index!=0}" ng-repeat="feature in controller.project.features track by $index">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" ng-model="controller.project.features[$index]">
+                                        <span class="input-group-btn"> 
+                                        <button type="button" class="btn btn-danger" ng-click="controller.project.features.splice($index,1)"><i class='fa fa-trash'></i></button> 
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-10" ng-class="{'col-sm-offset-2':controller.project.features.length>0}">
+                                    <button class="btn btn-primary" type="button" ng-click="controller.project.features.push('')" ng-disabled="controller.project.features.length>=10">Add Feature</button>
+                                </div>
+                            </div>
+                            <div class="hr-line-dashed"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Main Photo
+                                    <br/><small>Max 1 file</small>
+                                </label>
                                 <div class="col-sm-10 m-b">
-                                    <div class="dropzone" drop-zone=""></div>
+                                    <div id='mainPhotos' filesPropertyName='mainPhotos' maxFiles=1 class="dropzone" drop-zone=""></div>
+                                </div>
+                            </div>
+                            <div class="hr-line-dashed"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Photos
+                                    <br/><small>Max 10 files</small>
+                                </label>
+                                <div class="col-sm-10 m-b">
+                                    <div id='photos' filesPropertyName='photos' maxFiles=10 class="dropzone" drop-zone=""></div>
                                 </div>
                             </div>
                             <div class="hr-line-dashed"></div>
