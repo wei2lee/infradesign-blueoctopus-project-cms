@@ -92,6 +92,7 @@ module.exports = function (grunt) {
         // And string-injection based syntax is: ['$scope', '$rootScope', '$location', '$http', function exampleCtrl ($scope, $rootScope, $location, $http){}]
         uglify: {
             options: {
+                //                beautify: true,
                 mangle: false
             }
         },
@@ -124,7 +125,9 @@ module.exports = function (grunt) {
                             '*.html',
                             'views/{,*/}*.html',
                             'styles/patterns/*.*',
-                            'img/{,*/}*.*'
+                            'img/{,*/}*.*',
+                            'js/**',
+                            'css/**'
                         ]
                     },
                     {
@@ -133,8 +136,7 @@ module.exports = function (grunt) {
                         cwd: 'bower_components/fontawesome',
                         src: ['fonts/*.*'],
                         dest: '<%= inspinia.dist %>'
-                    },
-                    {
+                    }, {
                         expand: true,
                         dot: true,
                         cwd: 'bower_components/bootstrap',
@@ -213,7 +215,7 @@ module.exports = function (grunt) {
         'uglify',
         'filerev',
         'usemin',
-        'htmlmin'
+        //'htmlmin'
     ]);
 
 };

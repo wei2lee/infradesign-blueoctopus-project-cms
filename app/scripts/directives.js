@@ -119,52 +119,74 @@ function dropZone() {
             maxThumbnailFilesize: attrs.maxfiles,
             dictDefaultMessage: '',
             init: function () {
-                this.idid = '123';
-
-
                 var _this = this;
-                var filesPropertyName = attrs.filespropertyname || 'files';
-
-                console.log('dropZone.init');
-                if (scope[filesPropertyName] === undefined) scope[filesPropertyName] = [];
-                this.on('success', function (file, json) {
-                    console.log('dropZone.success');
-                });
-
+                if (attrs.id) {
+                    if (scope[attrs.id]) {
+                        _.each(scope[attrs.id], function (mockFile) {
+                            _this.emit("addedfile", mockFile);
+                            _this.emit("thumbnail", mockFile, mockFile.url);
+                            _this.emit("complete", mockFile);
+                        });
+                    } else {
+                        scope[attrs.id] = [];
+                        var initwatch = scope.$watch(attrs.id, function (newval, oldval) {
+                            if ((!oldval || oldval.length == 0) && (newval && newval.length > 0)) {
+                                _.each(newval, function (mockFile) {
+                                    _this.emit("addedfile", mockFile);
+                                    _this.emit("thumbnail", mockFile, mockFile.url);
+                                    _this.emit("complete", mockFile);
+                                });
+                                initwatch();
+                            }
+                        });
+                    }
+                } else {
+                    alert('dropzone directive must have id');
+                    return;
+                }
+                this.on('success', function (file, json) {});
 
                 this.on('maxfilesexceeded', function (file) {
-                    console.log('dropZone.maxfilesexceeded');
                     _this.removeFile(file);
                 });
 
                 this.on('sending', function (file, xhr, formData) {
-                    console.log('dropZone.sending');
+
                 });
 
                 this.on('addedfile', function (file) {
-                    console.log('dropZone.addedfile');
-                    if (scope[filesPropertyName].length + 1 > attrs.maxfiles) {
+                    if (scope[attrs.id].length + 1 > attrs.maxfiles) {
+                        return;
+                    } else if (file.url) {
                         return;
                     }
+                    console.log('addedfile');
+                    console.log(file);
                     var parseFile = new Parse.File(file.name, file);
-                    var savePromise = parseFile.save();
-                    parseFile.savePromise = savePromise;
-                    parseFile.file = file;
-                    savePromise.done(function (result) {
-                        console.log(result);
-                        parseFile.saveDone = true;
+                    parseFile.save().done(function (result) {
+                        scope[attrs.id].push({
+                            url: parseFile.url(),
+                            name: file.name,
+                            size: file.size
+                        });
                     }).fail(function (error) {
-                        console.log(error);
-                        parseFile.saveError = error;
-                    });
-                    scope.$apply(function () {
-                        scope[filesPropertyName].push(parseFile);
+
                     });
                 });
                 this.on('drop', function (file) {
-                    //                    alert('file');
-                    console.log('dropZone.drop');
+                    console.log('drop');
+                });
 
+                this.on('removedfile', function (file) {
+                    console.log('removedfile');
+                    var index = -1;
+                    for (i = 0; i < scope[attrs.id].length; i++) {
+                        if (scope[attrs.id][i].url == file.url) {
+                            index = i;
+                            break;
+                        }
+                    }
+                    if (index >= 0) scope[attrs.id] = scope[attrs.id].splice(i, 1);
                 });
             }
         });

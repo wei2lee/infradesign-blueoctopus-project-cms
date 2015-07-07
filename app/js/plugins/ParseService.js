@@ -7,7 +7,7 @@ angular.module('ParseServices', [])
     this.TeamClassName = "Team";
     this.TeamProperties = ['name', 'defaultCountry', 'createdBy'];
     this.ProjectClassName = "Project";
-    this.ProjectProperties = ['title', 'photos', 'mainPhoto', 'coordinate', 'features', 'description', 'forVIP', 'latitude', 'longitude'];
+    this.ProjectProperties = ['title', 'photos', 'mainPhotos', 'features', 'description', 'forVIP', 'latitude', 'longitude'];
     this.UserRoleClassName = "UserRole";
     this.UserRoleProperties = ['name', 'remarks'];
     this.MemberClassName = "Member";

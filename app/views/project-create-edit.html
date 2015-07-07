@@ -37,12 +37,12 @@
                         </div>
                     </div>
                     <div class="ibox-content">
-                        <form method="get" class="form-horizontal">
-                            <div class="form-group">
+                        <form name="form" method="get" class="form-horizontal" novalidate>
+                            <div class="form-group required" ng-class="{ 'has-error' : form.title.$invalid && !form.title.$pristine }">
                                 <label class="col-sm-2 control-label">Title</label>
 
                                 <div class="col-sm-10">
-                                    <input type="text" class="form-control" ng-model='controller.project.title'>
+                                    <input type="text" class="form-control" name='title' ng-model='controller.project.title' required>
                                 </div>
                             </div>
                             <div class="hr-line-dashed"></div>
@@ -61,7 +61,6 @@
                                     <input type="text" class="form-control" ng-model='controller.project.latitude'>
                                 </div>
                             </div>
-                            <div class="hr-line-dashed"></div>
                             <div class="form-group">
                                 <label class="col-sm-2 control-label">Longitude</label>
 
@@ -91,7 +90,7 @@
                                     <br/><small>Max 1 file</small>
                                 </label>
                                 <div class="col-sm-10 m-b">
-                                    <div id='mainPhotos' filesPropertyName='mainPhotos' maxFiles=1 class="dropzone" drop-zone=""></div>
+                                    <div id='mainPhotos' maxFiles=1 class="dropzone" drop-zone=""></div>
                                 </div>
                             </div>
                             <div class="hr-line-dashed"></div>
@@ -100,7 +99,7 @@
                                     <br/><small>Max 10 files</small>
                                 </label>
                                 <div class="col-sm-10 m-b">
-                                    <div id='photos' filesPropertyName='photos' maxFiles=10 class="dropzone" drop-zone=""></div>
+                                    <div id='photos' maxFiles=10 class="dropzone" drop-zone=""></div>
                                 </div>
                             </div>
                             <div class="hr-line-dashed"></div>
@@ -115,7 +114,7 @@
                             <div class="form-group">
                                 <div class="col-sm-4 col-sm-offset-2">
                                     <a class="btn btn-white" type="submit" ui-sref="index.project-list">Back</a>
-                                    <button class="btn btn-primary" type="submit" ng-click='controller.save()'>Save</button>
+                                    <button class="btn btn-primary" type="submit" ng-click='controller.save()' ng-disabled="form.$invalid">Save</button>
                                 </div>
                             </div>
                         </form>

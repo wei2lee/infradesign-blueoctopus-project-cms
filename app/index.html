@@ -26,15 +26,12 @@
 
     <!-- Bootstrap -->
     <link href="bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
-
-
-
     <!-- Main Inspinia CSS files -->
-    <link href="styles/animate.css" rel="stylesheet">
     <!-- endbower -->
     <!-- endbuild -->
 
     <!-- build:css({.tmp,app}) styles/style.css -->
+    <link href="styles/animate.css" rel="stylesheet">
     <link href="styles/style.css" rel="stylesheet">
     <!-- endbuild -->
 
@@ -53,7 +50,7 @@
 
 
     <!-- build:js(.) scripts/vendor.js -->
-    <script src="//parse.com/downloads/javascript/parse/latest/min.js"></script>
+
 
     <script src="bower_components/underscore/underscore-min.js"></script>
 
@@ -76,30 +73,32 @@
 
     <!-- Angular scripts-->
     <script src="bower_components/angular/angular.min.js"></script>
-    <script src="js/plugins/oclazyload/dist/ocLazyLoad.min.js"></script>
+    <script src="bower_components/oclazyload/dist/ocLazyLoad.min.js"></script>
     <script src="bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
     <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
-    <script src="js/plugins/angular-idle/angular-idle.js"></script>
     <script src="bower_components/angular-cookies/angular-cookies.min.js"></script>
-    <!--    <script src="bower_components/parse-angular-patch/dist/parse-angular.js"></script>-->
+    <script src="bower_components/ng-country-select/dist/ng-country-select.js"></script>
+
     <!-- Angular Dependiences -->
     <!--                      -->
     <!--                      -->
     <!--                      -->
-    <script src="js/plugins/ParseService.js"></script>
     <!-- endbuild -->
 
     <!-- build:js({.tmp,app}) scripts/scripts.js -->
     <!-- Custom and plugin javascript -->
 
-    <script src="bower_components/ng-country-select/dist/ng-country-select.js"></script>
-    <script src="scripts/inspinia.js"></script>
+    <!--     Anglar App Script -->
 
-    <!-- Anglar App Script -->
+    <script src="js/plugins/parse-1.4.2.js"></script>
+    <script src="js/plugins/angular-idle/angular-idle.js"></script>
+    <script src="js/plugins/ParseService.js"></script>
+    <script src="scripts/inspinia.js"></script>
     <script src="scripts/app.js"></script>
     <script src="scripts/config.js"></script>
-    <script src="scripts/directives.js"></script>
+    <!--<script src="scripts/directives.js"></script>-->
     <script src="scripts/controllers.js"></script>
+
     <!-- endbuild -->
 
 </body>

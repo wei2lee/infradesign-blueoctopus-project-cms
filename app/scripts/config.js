@@ -22,7 +22,7 @@ var resolvePluginDataTable = {
             {
                 name: 'datatables',
                 //files: ['js/plugins/dataTables/angular-datatables.min.js']
-                files: ['bower_components/angular-datatables/dist/angular-datatables.js']
+                files: ['js/plugins/angular-datatables/dist/angular-datatables.js']
             }
         ]);
     }
@@ -180,7 +180,6 @@ angular
         };
     })
     .run(function ($rootScope, $state, authencation) {
-
         $rootScope.$on('$stateChangeStart', function (event, toState, toStateParams) {
             console.log($state.current.name + '>' + toState.name + ' : ' + authencation.isAuthencated());
             if (toState.name == 'login' && authencation.isAuthencated()) {

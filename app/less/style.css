@@ -7528,3 +7528,6 @@ table > thead > tr > th,
 .ibox-tools a.btn {
   color: #FFFFFF;
 }
+.form-group.required .control-label::after {
+  content: '*';
+}

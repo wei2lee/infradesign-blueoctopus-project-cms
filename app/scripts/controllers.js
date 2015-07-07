@@ -93,31 +93,10 @@ function ProjectListCtrl($scope, DTOptionsBuilder, DTColumnDefBuilder, ParseProj
     });
 }
 
-function ProjectCreateEditCtrl($scope, ParseProject, $modal, $rootScope, $state, $stateParams) {
+function ProjectCreateEditCtrl($scope, ParseProject, $modal, $rootScope, $state, $stateParams, $timeout) {
     var _this = this;
     this.alert = null;
     this.isEdit = $state.current.name.indexOf("project-edit") >= 0;
-    if (this.isEdit) {
-        this.project = $rootScope.editProject;
-        if (!this.project) {
-            this.project = new ParseProject();
-            this.project.data.id = $stateParams.objectId;
-            this.project.data.fetch().fail(function (error) {
-                _this.alert = {
-                    title: 'Fail',
-                    message: error.message,
-                    type: 'danger'
-                };
-            }).always(function () {
-                $scope.$apply();
-            });
-        } else {
-
-        }
-
-    } else {
-        this.project = new ParseProject();
-    }
     this.delete = function () {
         $scope.loading = {
             message: "Deleting..."
@@ -142,14 +121,8 @@ function ProjectCreateEditCtrl($scope, ParseProject, $modal, $rootScope, $state,
         });
     }
     this.save = function () {
-        console.log($scope.mainPhotos);
-        console.log($scope.photos);
-
-        _this.project.mainPhoto = $scope.mainPhotos.length ? $scope.mainPhotos[0].url() : null;
-        _this.project.photos = _.map($scope.photos, function (photo) {
-            console.log(photo);
-            return photo.url() || null;
-        });
+        _this.project.mainPhoto = $scope.mainPhotos.length ? $scope.mainPhotos[0] : null;
+        _this.project.photos = $scope.photos;
         $loading = $modal.open({
             templateUrl: 'views/modal-loading.html',
             backdrop: 'static'
@@ -177,6 +150,37 @@ function ProjectCreateEditCtrl($scope, ParseProject, $modal, $rootScope, $state,
             $scope.$apply();
         });
     }
+
+    var fetch = null;
+    if (this.isEdit) {
+        if ($rootScope.editProject) {
+            fetch = $.Deferred().resolve($rootScope.editProject).promise();
+        } else {
+            var item = new ParseProject();
+            item.data.id = $stateParams.objectId;
+            fetch = item.data.fetch()
+        }
+    } else {
+        fetch = $.Deferred().resolve(new ParseProject()).promise();
+    }
+    fetch.done(function (result) {
+        _this.project = result.data ? result : new ParseProject(result);
+        $scope.mainPhotos = _this.project.mainPhotos || [];
+        $scope.photos = _this.project.photos || [];
+
+        console.log(_this.project.mainPhotos);
+        console.log(_this.project.photos);
+    }).fail(function (error) {
+        _this.alert = {
+            title: 'Fail',
+            message: error.message || error,
+            type: 'danger'
+        };
+    }).always(function () {
+        $timeout(function () {
+            $scope.$apply();
+        });
+    });
 }
 
 function TeamListCtrl($scope, DTOptionsBuilder, DTColumnDefBuilder, ParseTeam, ParseMember, ParseUserRole, $rootScope, $state) {
@@ -488,7 +492,8 @@ function UserCreateEditCtrl($scope, ParseMember, ParseUserRole, ParseTeam, $moda
         this.team.data.id = $stateParams.teamId;
         fetchTeam = this.team.data.fetch().done(function (result) {
             if (!_this.team.defaultCountry) _this.team.defaultCountry = 'MY';
-            _this.user.team = new ParseTeam(result);
+            _this.user.team = this.team;
+            if (!_this.user.country) _this.user.country = _this.team.defaultCountry || 'MY';
             return new Parse.Query("UserRole").find();
         }).then(function (result) {
             _this.roles = _.map(result, function (o) {
