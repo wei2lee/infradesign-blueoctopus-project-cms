@@ -19,7 +19,7 @@ function TopNavBarCtrl(authencation) {
     this.authencation = authencation;
 }
 
-function LoginCtrl($scope, authencation, $modal, $timeout, $state) {
+function LoginCtrl($scope, authencation, $modal, $timeout, $state, ParseSDK) {
     var _this = this;
     this.alert = null;
     this.login = function () {
@@ -34,10 +34,9 @@ function LoginCtrl($scope, authencation, $modal, $timeout, $state) {
         authencation.login($scope.userName, $scope.password).done(function () {
             $state.go('index.team-list');
         }).fail(function (error) {
-            //console.log(error);
             _this.alert = {
                 title: '',
-                message: error.message,
+                message: (error && error.message) ? error.message : error,
             };
         }).always(function () {
             $loading.dismiss('cancel');
@@ -62,7 +61,7 @@ function ProjectListCtrl($scope, DTOptionsBuilder, DTColumnDefBuilder, ParseProj
         project.data.destroy().fail(function (error) {
             _this.alert = {
                 title: 'Fail',
-                message: error.message,
+                message: (error && error.message) ? error.message : error,
                 type: 'danger'
             };
         }).always(function () {
@@ -81,11 +80,10 @@ function ProjectListCtrl($scope, DTOptionsBuilder, DTColumnDefBuilder, ParseProj
         _this.projects = _.map(result, function (o) {
             return new ParseProject(o);
         });
-        $scope.$apply();
     }).fail(function (error) {
         _this.alert = {
             title: 'Fail',
-            message: error.message,
+            message: (error && error.message) ? error.message : error,
             type: 'danger'
         };
     }).always(function () {
@@ -112,7 +110,7 @@ function ProjectCreateEditCtrl($scope, ParseProject, $modal, $rootScope, $state,
         }).fail(function (error) {
             _this.alert = {
                 title: 'Fail',
-                message: error.message,
+                message: (error && error.message) ? error.message : error,
                 type: 'danger'
             };
         }).always(function () {
@@ -121,7 +119,7 @@ function ProjectCreateEditCtrl($scope, ParseProject, $modal, $rootScope, $state,
         });
     }
     this.save = function () {
-        _this.project.mainPhoto = $scope.mainPhotos.length ? $scope.mainPhotos[0] : null;
+        _this.project.mainPhotos = $scope.mainPhotos;
         _this.project.photos = $scope.photos;
         $loading = $modal.open({
             templateUrl: 'views/modal-loading.html',
@@ -142,7 +140,7 @@ function ProjectCreateEditCtrl($scope, ParseProject, $modal, $rootScope, $state,
         }).fail(function (error) {
             _this.alert = {
                 title: 'Fail',
-                message: error.message,
+                message: (error && error.message) ? error.message : error,
                 type: 'danger'
             };
         }).always(function () {
@@ -154,26 +152,23 @@ function ProjectCreateEditCtrl($scope, ParseProject, $modal, $rootScope, $state,
     var fetch = null;
     if (this.isEdit) {
         if ($rootScope.editProject) {
-            fetch = $.Deferred().resolve($rootScope.editProject).promise();
+            fetch = Parse.Promise.as($rootScope.editProject.data);
         } else {
             var item = new ParseProject();
             item.data.id = $stateParams.objectId;
             fetch = item.data.fetch()
         }
     } else {
-        fetch = $.Deferred().resolve(new ParseProject()).promise();
+        fetch = Parse.Promise.as(new ParseProject().data);
     }
     fetch.done(function (result) {
-        _this.project = result.data ? result : new ParseProject(result);
+        _this.project = new ParseProject(result);
         $scope.mainPhotos = _this.project.mainPhotos || [];
         $scope.photos = _this.project.photos || [];
-
-        console.log(_this.project.mainPhotos);
-        console.log(_this.project.photos);
     }).fail(function (error) {
         _this.alert = {
             title: 'Fail',
-            message: error.message || error,
+            message: (error && error.message) ? error.message : error,
             type: 'danger'
         };
     }).always(function () {
@@ -194,7 +189,7 @@ function TeamListCtrl($scope, DTOptionsBuilder, DTColumnDefBuilder, ParseTeam, P
         team.data.destroy().fail(function (error) {
             _this.alert = {
                 title: 'Fail',
-                message: error.message,
+                message: (error && error.message) ? error.message : error,
                 type: 'danger'
             };
         }).always(function () {
@@ -216,7 +211,6 @@ function TeamListCtrl($scope, DTOptionsBuilder, DTColumnDefBuilder, ParseTeam, P
             return o;
         });
         var userQuery = new Parse.Query("Member");
-        userQuery.include('userRole');
         return userQuery.find();
     }).done(function (result) {
         _this.users = _.map(result, function (o) {
@@ -230,7 +224,7 @@ function TeamListCtrl($scope, DTOptionsBuilder, DTColumnDefBuilder, ParseTeam, P
     }).fail(function (error) {
         _this.alert = {
             title: 'Fail',
-            message: error.message,
+            message: (error && error.message) ? error.message : error,
             type: 'danger'
         };
     }).always(function () {
@@ -239,32 +233,11 @@ function TeamListCtrl($scope, DTOptionsBuilder, DTColumnDefBuilder, ParseTeam, P
 
 }
 
-function TeamCreateEditCtrl($scope, ParseTeam, $modal, $rootScope, $state, $stateParams) {
+function TeamCreateEditCtrl($scope, ParseTeam, $modal, $rootScope, $state, $stateParams, $timeout) {
     var _this = this;
     this.alert = null;
     this.isEdit = $state.current.name.indexOf("team-edit") >= 0;
 
-    if (this.isEdit) {
-        this.team = $rootScope.editTeam;
-        if (!this.team) {
-            this.team = new ParseTeam();
-            this.team.data.id = $stateParams.objectId;
-            this.team.data.fetch().done(function () {
-                if (!_this.team.defaultCountry) _this.team.defaultCountry = 'MY';
-            }).fail(function (error) {
-                _this.alert = {
-                    title: 'Fail',
-                    message: error.message,
-                    type: 'danger'
-                };
-            }).always(function () {
-                $scope.$apply();
-            });
-        }
-    } else {
-        this.team = new ParseTeam();
-        if (!this.team.defaultCountry) this.team.defaultCountry = 'MY';
-    }
     this.delete = function () {
         $scope.loading = {
             message: "Deleting..."
@@ -275,12 +248,13 @@ function TeamCreateEditCtrl($scope, ParseTeam, $modal, $rootScope, $state, $stat
             scope: $scope
         });
         _this.alert = null;
+
         this.team.data.destroy().done(function (result) {
-            $state.go('index.project-list');
+            $state.go('index.team-list');
         }).fail(function (error) {
             _this.alert = {
                 title: 'Fail',
-                message: error.message,
+                message: (error && error.message) ? error.message : error,
                 type: 'danger'
             };
         }).always(function () {
@@ -309,7 +283,7 @@ function TeamCreateEditCtrl($scope, ParseTeam, $modal, $rootScope, $state, $stat
         }).fail(function (error) {
             _this.alert = {
                 title: 'Fail',
-                message: error.message,
+                message: (error && error.message) ? error.message : error,
                 type: 'danger'
             };
         }).always(function () {
@@ -317,20 +291,47 @@ function TeamCreateEditCtrl($scope, ParseTeam, $modal, $rootScope, $state, $stat
             $scope.$apply();
         });
     }
+
+    var fetch = null;
+    if (this.isEdit) {
+        if ($rootScope.editTeam) {
+            fetch = Parse.Promise.as($rootScope.editTeam.data);
+        } else {
+            var item = new ParseTeam();
+            item.data.id = $stateParams.objectId;
+            fetch = item.data.fetch()
+        }
+    } else {
+        fetch = Parse.Promise.as(new ParseTeam().data);
+    }
+    fetch.done(function (result) {
+        _this.team = new ParseTeam(result);
+        if (!_this.team.defaultCountry) _this.team.defaultCountry = 'MY';
+    }).fail(function (error) {
+        _this.alert = {
+            title: 'Fail',
+            message: (error && error.message) ? error.message : error,
+            type: 'danger'
+        };
+    }).always(function () {
+        $timeout(function () {
+            $scope.$apply();
+        });
+    });
 }
 
-function MemberListCtrl($scope, DTOptionsBuilder, DTColumnDefBuilder, ParseMember, ParseUserRole, ParseTeam, $rootScope, $state, $stateParams) {
+function MemberListCtrl($scope, DTOptionsBuilder, DTColumnDefBuilder, ParseMember, ParseUserRole, ParseTeam, $rootScope, $state, $stateParams, $timeout) {
     var _this = this;
     this.alert = null;
     this.users = [];
-    this.team = $rootScope.editTeam;
+    this.team = null;
     this.delete = function (user) {
         var indexOf = _this.team.members.indexOf(user);
         _this.team.members.splice(indexOf, 1);
         user.data.destroy().fail(function (error) {
             _this.alert = {
                 title: 'Fail',
-                message: error.message,
+                message: (error && error.message) ? error.message : error,
                 type: 'danger'
             };
             console.log(error.message);
@@ -348,51 +349,54 @@ function MemberListCtrl($scope, DTOptionsBuilder, DTColumnDefBuilder, ParseMembe
         });
     };
 
-
     var fetchTeam = null;
-    if (!this.team) {
-        this.team = new ParseTeam();
-        this.team.data.id = $stateParams.objectId;
-        fetchTeam = this.team.data.fetch().done(function () {
-            if (!_this.team.defaultCountry) _this.team.defaultCountry = 'MY';
-            _this.team.members = [];
-        }).fail(function (error) {
-            _this.alert = {
-                title: 'Fail',
-                message: error.message,
-                type: 'danger'
-            };
-        }).always(function () {
-            $scope.$apply();
-        });
+    var fetchUsers = null;
+    if ($rootScope.editTeam) {
+        fetchTeam = Parse.Promise.as($rootScope.editTeam.data);
+        if ($rootScope.editTeam.members) {
+            fetchUsers = Parse.Promise.as(_.map($rootScope.editTeam.members, function (o) {
+                return o.data
+            }));
+        } else {
+            var userQuery = new Parse.Query("Member");
+            userQuery.include('userRole');
+            fetchUsers = userQuery.find();
+        }
     } else {
-        fetchTeam = $.Deferred().resolve();
+        var item = new ParseTeam();
+        item.data.id = $stateParams.objectId;
+        fetchTeam = item.data.fetch()
+
+        var userQuery = new Parse.Query("Member");
+        userQuery.include('userRole');
+        fetchUsers = userQuery.find();
     }
 
-    var userQuery = new Parse.Query("Member");
-    userQuery.include('userRole');
-    fetchTeam.then(function () {
-        return userQuery.find().done(function (result) {
-            _this.users = _.map(result, function (o) {
-                return new ParseMember(o);
-            });
-            _this.team.members = _.filter(_this.users, function (user) {
-                return user.team && user.team.data.id == _this.team.data.id;
-            });
-        }).fail(function (error) {
-            _this.alert = {
-                title: 'Fail',
-                message: error.message,
-                type: 'danger'
-            };
-        }).always(function () {
+    Parse.Promise.when(fetchTeam, fetchUsers).done(function (team, users) {
+        _this.team = new ParseTeam(team);
+        _this.users = _.map(users, function (o) {
+            return new ParseMember(o);
+        });
+        console.log(_this.users);
+        _this.users = _.filter(_this.users, function (o) {
+            return o.team && o.team.data.id == $stateParams.objectId;
+        });
+        _this.team.members = _this.users;
+    }).fail(function (error) {
+        _this.alert = {
+            title: 'Fail',
+            message: (error && error.message) ? error.message : error,
+            type: 'danger'
+        };
+    }).always(function () {
+        $timeout(function () {
             $scope.$apply();
         });
     });
 }
 
 
-function UserCreateEditCtrl($scope, ParseMember, ParseUserRole, ParseTeam, $modal, $rootScope, $state, $stateParams) {
+function UserCreateEditCtrl($scope, ParseMember, ParseUserRole, ParseTeam, $modal, $rootScope, $state, $stateParams, $timeout) {
     var _this = this;
     this.alert = null;
     this.isEdit = $state.current.name.indexOf("user-edit") >= 0;
@@ -417,7 +421,7 @@ function UserCreateEditCtrl($scope, ParseMember, ParseUserRole, ParseTeam, $moda
         }).fail(function (error) {
             _this.alert = {
                 title: 'Fail',
-                message: error.message,
+                message: (error && error.message) ? error.message : error,
                 type: 'danger'
             };
 
@@ -431,7 +435,6 @@ function UserCreateEditCtrl($scope, ParseMember, ParseUserRole, ParseTeam, $moda
 
     this.save = function () {
         _this.user.userRole = _this.userRole;
-        console.log(_this.user.userRole);
         $loading = $modal.open({
             templateUrl: 'views/modal-loading.html',
             backdrop: 'static'
@@ -453,7 +456,7 @@ function UserCreateEditCtrl($scope, ParseMember, ParseUserRole, ParseTeam, $moda
         }).fail(function (error) {
             _this.alert = {
                 title: 'Fail',
-                message: error.message,
+                message: (error && error.message) ? error.message : error,
                 type: 'danger'
             };
         }).always(function () {
@@ -461,60 +464,65 @@ function UserCreateEditCtrl($scope, ParseMember, ParseUserRole, ParseTeam, $moda
             $scope.$apply();
         });
     }
+
+    var fetchTeam = null;
+    var fetchUser = null;
+    var fetchRoles = null;
     if (this.isEdit) {
-        var fetchUser = new Parse.Query("Member");
-        fetchUser.include("team");
-        fetchUser.include("userRole");
-        fetchUser.equalTo("objectId", $stateParams.objectId);
-        fetchUser.find().done(function (results) {
-            _this.user = new ParseMember(results[0]);
-            _this.team = _this.user.team;
-            _this.userRole = _this.user.userRole;
-            if (!_this.user.country) _this.user.country = _this.team.defaultCountry || 'MY';
-            return new Parse.Query("UserRole").find();
-        }).then(function (result) {
-            _this.roles = _.map(result, function (o) {
-                return new ParseUserRole(o);
-            });
-        }).fail(function (error) {
-            _this.alert = {
-                title: 'Fail',
-                message: error.message,
-                type: 'danger'
-            };
-        }).always(function () {
-            $scope.$apply();
-        });
+        if ($rootScope.editTeam) {
+            fetchTeam = Parse.Promise.as($rootScope.editTeam.data);
+        } else {
+            var item = new ParseTeam();
+            item.data.id = $stateParams.teamId;
+            fetchTeam = item.data.fetch()
+        }
+        if ($rootScope.editUser) {
+            fetchUser = Parse.Promise.as($rootScope.editUser.data);
+        } else {
+            var item = new ParseMember();
+            item.data.id = $stateParams.objectId;
+            fetchUser = item.data.fetch()
+        }
     } else {
-        this.user = new ParseMember();
-        this.userRole = this.user.userRole;
-        this.team = new ParseTeam();
-        this.team.data.id = $stateParams.teamId;
-        fetchTeam = this.team.data.fetch().done(function (result) {
-            if (!_this.team.defaultCountry) _this.team.defaultCountry = 'MY';
-            _this.user.team = this.team;
-            if (!_this.user.country) _this.user.country = _this.team.defaultCountry || 'MY';
-            return new Parse.Query("UserRole").find();
-        }).then(function (result) {
-            _this.roles = _.map(result, function (o) {
-                return new ParseUserRole(o);
-            });
-        }).fail(function (error) {
-            _this.alert = {
-                title: 'Fail',
-                message: error.message,
-                type: 'danger'
-            };
-        }).always(function () {
+        if ($rootScope.editTeam) {
+            fetchTeam = Parse.Promise.as($rootScope.editTeam.data);
+        } else {
+            var item = new ParseTeam();
+            item.data.id = $stateParams.teamId;
+            fetchTeam = item.data.fetch()
+        }
+        fetchUser = Parse.Promise.as(new ParseMember().data);
+    }
+    var fetchRoleQuery = new Parse.Query("UserRole");
+    fetchRoleQuery.notEqualTo('objectId', 'sPNteI2ahV');
+    fetchRoles = fetchRoleQuery.find();
+
+    Parse.Promise.when(fetchTeam, fetchUser, fetchRoles).done(function (team, user, roles) {
+        _this.team = new ParseTeam(team);
+        _this.user = new ParseMember(user);
+        _this.user.team = _this.team;
+        if (!_this.user.country) _this.user.country = _this.team.defaultCountry || 'MY';
+        _this.roles = _.map(roles, function (o) {
+            return new ParseUserRole(o);
+        });
+        _this.userRole = _this.user.userRole;
+    }).fail(function (error) {
+        _this.alert = {
+            title: 'Fail',
+            message: (error && error.message) ? error.message : error,
+            type: 'danger'
+        };
+    }).always(function () {
+        $timeout(function () {
             $scope.$apply();
         });
-    }
+    });
 }
 
 
 
 
-function RoleListCtrl($scope, DTOptionsBuilder, DTColumnDefBuilder, ParseUserRole, $rootScope, $state, $stateParams) {
+function RoleListCtrl($scope, DTOptionsBuilder, DTColumnDefBuilder, ParseUserRole, $rootScope, $state, $stateParams, u) {
     var _this = this;
     this.alert = null;
     this.roles = [];
@@ -525,7 +533,7 @@ function RoleListCtrl($scope, DTOptionsBuilder, DTColumnDefBuilder, ParseUserRol
         role.data.destroy().fail(function (error) {
             _this.alert = {
                 title: 'Fail',
-                message: error.message,
+                message: (error && error.message) ? error.message : error,
                 type: 'danger'
             };
         }).always(function () {
@@ -543,13 +551,14 @@ function RoleListCtrl($scope, DTOptionsBuilder, DTColumnDefBuilder, ParseUserRol
     var roleQuery = new Parse.Query("UserRole");
     roleQuery.find().done(function (result) {
         _this.roles = _.map(result, function (o) {
-            return new ParseUserRole(o);
+            o = new ParseUserRole(o);
+            o.allowDeleteRow = u.allowDeleteRow(o);
+            return o;
         });
-        $scope.$apply();
     }).fail(function (error) {
         _this.alert = {
             title: 'Fail',
-            message: error.message,
+            message: (error && error.message) ? error.message : error,
             type: 'danger'
         };
     }).always(function () {
@@ -557,29 +566,10 @@ function RoleListCtrl($scope, DTOptionsBuilder, DTColumnDefBuilder, ParseUserRol
     });
 }
 
-function RoleCreateEditCtrl($scope, ParseUserRole, $modal, $rootScope, $state, $stateParams) {
+function RoleCreateEditCtrl($scope, ParseUserRole, $modal, $rootScope, $state, $stateParams, $timeout, u) {
     var _this = this;
     this.alert = null;
     this.isEdit = $state.current.name.indexOf("role-edit") >= 0;
-
-    if (this.isEdit) {
-        this.role = $rootScope.editRole;
-        if (!this.role) {
-            this.role = new ParseUserRole();
-            this.role.data.id = $stateParams.objectId;
-            this.role.data.fetch().fail(function (error) {
-                _this.alert = {
-                    title: 'Fail',
-                    message: error.message,
-                    type: 'danger'
-                };
-            }).always(function () {
-                $scope.$apply();
-            });
-        }
-    } else {
-        this.role = new ParseUserRole();
-    }
 
     this.delete = function () {
         $scope.loading = {
@@ -596,7 +586,7 @@ function RoleCreateEditCtrl($scope, ParseUserRole, $modal, $rootScope, $state, $
         }).fail(function (error) {
             _this.alert = {
                 title: 'Fail',
-                message: error.message,
+                message: (error && error.message) ? error.message : error,
                 type: 'danger'
             };
         }).always(function () {
@@ -625,7 +615,7 @@ function RoleCreateEditCtrl($scope, ParseUserRole, $modal, $rootScope, $state, $
         }).fail(function (error) {
             _this.alert = {
                 title: 'Fail',
-                message: error.message,
+                message: (error && error.message) ? error.message : error,
                 type: 'danger'
             };
         }).always(function () {
@@ -633,6 +623,33 @@ function RoleCreateEditCtrl($scope, ParseUserRole, $modal, $rootScope, $state, $
             $scope.$apply();
         });
     }
+
+    var fetch = null;
+    if (this.isEdit) {
+        if ($rootScope.editRole) {
+            fetch = Parse.Promise.as($rootScope.editRole.data);
+        } else {
+            var item = new ParseUserRole();
+            item.data.id = $stateParams.objectId;
+            fetch = item.data.fetch()
+        }
+    } else {
+        fetch = Parse.Promise.as(new ParseUserRole().data);
+    }
+    fetch.done(function (result) {
+        _this.role = new ParseUserRole(result);
+        _this.role.allowDeleteRow = u.allowDeleteRow(_this.role);
+    }).fail(function (error) {
+        _this.alert = {
+            title: 'Fail',
+            message: (error && error.message) ? error.message : error,
+            type: 'danger'
+        };
+    }).always(function () {
+        $timeout(function () {
+            $scope.$apply();
+        });
+    });
 }
 
 function ModalInstanceCtrl($scope, $modalInstance) {

@@ -42,7 +42,7 @@
                                 <tr ng-repeat="role in controller.roles">
                                     <td>{{ role.name }}</td>
                                     <td>{{ role.remarks }}</td>
-                                    <td class='column-action'><span class='btn btn-primary btn-xs' ng-click='controller.edit(role)'>Edit</span>&nbsp;<span class='btn btn-danger btn-xs' ng-click='controller.delete(role)'>Delete</span>
+                                    <td class='column-action'><span class='btn btn-primary btn-xs' ng-click='controller.edit(role)'>Edit</span>&nbsp;<span ng-if="role.allowDeleteRow" class='btn btn-danger btn-xs' ng-click='controller.delete(role)'>Delete</span>
                                     </td>
                                 </tr>
                             </tbody>

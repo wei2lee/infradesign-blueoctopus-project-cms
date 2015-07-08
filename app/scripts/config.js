@@ -142,7 +142,30 @@ function config($stateProvider, $urlRouterProvider) {
 angular
     .module('inspinia')
     .config(config)
-    .service('authencation', function ($state, $cookies, ParseMember) {
+    .service('u', function (ParseMember, ParseUserRole) {
+        this.allowAccessCMS = function (o) {
+            if (o.className == 'UserRole') {
+                return (o.data ? o.data.id : o.id) == 'sPNteI2ahV';
+            } else if (o.className == 'Member') {
+                return (o.data ? o.userRole.data.id : o.get('userRole').id) == 'sPNteI2ahV';
+            }
+        }
+        this.allowAccessContent = function (o) {
+            if (o.className == 'UserRole') {
+                return ['sPNteI2ahV', 'W32Vgpw4DJ', 'qPehsxmwAW'].indexOf(o.data ? o.data.id : o.id) >= 0;
+            } else if (o.className == 'Member') {
+                return ['sPNteI2ahV', 'W32Vgpw4DJ', 'qPehsxmwAW'].indexOf(o.data ? o.userRole.data.id : o.get('userRole').id) >= 0;
+            }
+        }
+        this.allowDeleteRow = function (o) {
+            if (o.className == 'UserRole') {
+                return ['sPNteI2ahV', 'W32Vgpw4DJ', 'qPehsxmwAW'].indexOf(o.data ? o.data.id : o.id) < 0;
+            } else {
+                return true;
+            }
+        }
+    })
+    .service('authencation', function ($state, $cookies, ParseMember, u) {
         this.isAuthencated = function () {
             return $cookies.get('logon') == 1;
         };
@@ -150,22 +173,26 @@ angular
             var loginQuery = new Parse.Query("Member");
             loginQuery.equalTo('username', username);
             loginQuery.equalTo('password', password);
+            loginQuery.include('userRole');
             var $d = $.Deferred();
-            var find = loginQuery.find();
+            var find = loginQuery.first();
             find.done(function (result) {
-                if (result && result.length) {
-                    $cookies.put('logon', 1);
-                    $cookies.put('logonUser', new ParseMember(result[0]));
-                    if ($state.current.name == 'login') {
-                        $state.go('index.team-list');
+                if (result) {
+                    if (u.allowAccessCMS(result)) {
+                        $cookies.put('logon', 1);
+                        $cookies.put('logonUser', new ParseMember(result));
+                        if ($state.current.name == 'login') {
+                            $state.go('index.team-list');
+                        }
+                        $d.resolve();
+                    } else {
+                        $cookies.put('logon', 0);
+                        $cookies.put('logonUser', undefined);
+                        $d.reject(new Parse.Error(0, 'User doesn\'t have access CMS system.'));
                     }
-                    $d.resolve();
                 } else {
                     $cookies.put('logon', 0);
                     $cookies.put('logonUser', undefined);
-
-                    console.log(this);
-
                     $d.reject(new Parse.Error(0, 'Username is not matched with password.'));
                 }
             }).fail(function (error) {

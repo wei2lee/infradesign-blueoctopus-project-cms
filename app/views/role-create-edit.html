@@ -32,7 +32,7 @@
                         </h5>
 
                         <div ng-if="controller.isEdit" class="ibox-tools">
-                            <a ng-click="controller.delete()" class="btn btn-danger btn-xs">Delete</a>
+                            <a ng-click="controller.delete()" ng-if="controller.role.allowDeleteRow" class="btn btn-danger btn-xs">Delete</a>
                         </div>
                     </div>
                     <div class="ibox-content">
