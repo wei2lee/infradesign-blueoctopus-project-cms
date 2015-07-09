@@ -95,6 +95,15 @@ function ProjectCreateEditCtrl($scope, ParseProject, $modal, $rootScope, $state,
     var _this = this;
     this.alert = null;
     this.isEdit = $state.current.name.indexOf("project-edit") >= 0;
+    $scope.onDropZoneFileUploadError = function (error) {
+        _this.alert = {
+            title: 'Fail',
+            message: (error && error.message) ? error.message : error,
+            type: 'danger'
+        };
+        $scope.$apply();
+    };
+
     this.delete = function () {
         $scope.loading = {
             message: "Deleting..."

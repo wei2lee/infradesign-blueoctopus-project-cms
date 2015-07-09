@@ -154,6 +154,10 @@ function dropZone() {
 
                 });
 
+                function replaceAll(find, replace, str) {
+                    return str.replace(new RegExp(find, 'g'), replace);
+                }
+
                 this.on('addedfile', function (file) {
                     if (scope[attrs.id].length + 1 > attrs.maxfiles) {
                         return;
@@ -162,6 +166,8 @@ function dropZone() {
                     }
                     console.log('addedfile');
                     console.log(file);
+                    console.log(file.name);
+
                     var parseFile = new Parse.File(file.name, file);
                     parseFile.save().done(function (result) {
                         scope[attrs.id].push({
@@ -170,7 +176,11 @@ function dropZone() {
                             size: file.size
                         });
                     }).fail(function (error) {
+                        if (scope.onDropZoneFileUploadError) {
+                            scope.onDropZoneFileUploadError(error);
+                        }
 
+                        _this.removeFile(file);
                     });
                 });
                 this.on('drop', function (file) {
@@ -186,7 +196,9 @@ function dropZone() {
                             break;
                         }
                     }
-                    if (index >= 0) scope[attrs.id] = scope[attrs.id].splice(i, 1);
+                    if (index >= 0) {
+                        scope[attrs.id].splice(index, 1);
+                    }
                 });
             }
         });
